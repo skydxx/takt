@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Просмотр бэкапа {{ backup_date }} — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>📦 Просмотр бэкапа</h1>
+    <p style="color: var(--text-secondary);">Дата: {{ backup_date }}</p>
+</div>
+
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('backups') }}" class="btn" style="background: var(--bg-tertiary);">
+        <i data-lucide="arrow-left"></i>
+        Назад к списку
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Чаты в бэкапе</span>
+        <span class="badge">{{ chats|length }} чатов</span>
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Название чата</th>
+                    <th>Chat ID</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if chats %}
+                    {% for chat in chats %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <i data-lucide="message-square"></i>
+                                <span>{{ chat.chat_name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ chat.chat_id }}</td>
+                        <td>
+                            <a href="{{ url_for('view_backup_chat', backup_date=backup_date, filename=chat.file_name) }}" 
+                               class="btn-icon primary" title="Просмотреть">
+                                <i data-lucide="eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: var(--text-secondary);">
+                            Нет данных в этом бэкапе
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

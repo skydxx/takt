@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Такт — кабинет</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace.css') }}?v=3">
+</head>
+<body>
+  <header class="workspace-nav">
+    <a class="brand" href="{{ url_for('index') }}"><img class="brand-mark" src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="31" height="31">Такт</a>
+    <div class="nav-meta"><span>{{ user.username }}</span><form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}"><button type="submit">Выйти</button></form></div>
+  </header>
+  <main class="workspace-shell">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+    {% endwith %}
+
+    {% if not workspace %}
+      <section class="empty-state">
+        <div class="eyebrow">Первый запуск</div>
+        <h1>Активируйте рабочее пространство</h1>
+        <p>После ручного подтверждения оплаты вы получите одноразовый код подключения. Введите его здесь — данные сети и подписки создадутся автоматически.</p>
+        <form method="post" action="{{ url_for('workspace_activate') }}" class="activation-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <label>Код подключения<input name="code" maxlength="80" required placeholder="PVZ-..."></label>
+          <button class="button primary" type="submit">Активировать</button>
+        </form>
+      </section>
+    {% else %}
+      <section class="hero-row">
+        <div>
+          <div class="eyebrow">{% if workspace.viewer_role == 'owner' %}Кабинет владельца{% elif workspace.viewer_role == 'manager' %}Кабинет управляющего{% else %}Кабинет сотрудника{% endif %}</div>
+          <h1>{{ workspace.organization.name }}</h1>
+          <span class="role-badge role-badge-{{ workspace.viewer_role or 'guest' }}" role="status">
+            <i aria-hidden="true"></i>
+            {% if workspace.viewer_role == 'owner' %}Полный доступ ко всей сети
+            {% elif workspace.viewer_role == 'manager' %}Доступ к назначенным точкам
+            {% else %}Доступ сотрудника{% endif %}
+          </span>
+          <p>
+            {% if workspace.viewer_role == 'owner' %}Вы управляете сетью целиком: точки, команда, финансы, ставки и автоматизация.
+            {% elif workspace.viewer_role == 'manager' %}Здесь — только точки, к которым вам дал доступ владелец: их смены, зарплата и финансы. Структуру сети и автоматизацию настраивает владелец.
+            {% else %}Смены открываются и передаются в Telegram-чате точки. Здесь видно только то, что владелец разрешил показывать сотруднику.{% endif %}
+          </p>
+        </div>
+        <div class="subscription-pill"><span class="status-dot"></span>{% if workspace.subscription.status == 'active' %}Активна · осталось {{ workspace.subscription.days_remaining }} дн.{% elif workspace.subscription.status == 'grace' %}Грейс-период · осталось {{ workspace.subscription.grace_days_remaining }} дн.{% else %}Истекла{% endif %} · до {{ workspace.subscription.current_period_end[:10] if workspace.subscription.current_period_end else '—' }}{% if workspace.can_manage_structure %} <button class="renew-link" type="button" onclick="document.getElementById('renew').showModal()">Продлить</button>{% endif %}</div>
+      </section>
+
+      <section class="metric-grid">
+        <article class="metric"><span>Активные ПВЗ</span><strong>{{ workspace.points|length }}</strong><small>лимит {{ workspace.subscription.point_limit }}</small></article>
+        <article class="metric"><span>Участники</span><strong>{{ workspace.members|length }}</strong><small>владелец и команда</small></article>
+        <article class="metric"><span>Тариф</span><strong>{{ workspace.subscription.plan|capitalize }}</strong><small>оплата подтверждается вручную</small></article>
+        <article class="metric accent"><span>Автоматизация</span><strong>{{ workspace.automation.preset }}</strong><small>команды и уведомления</small></article>
+      </section>
+
+      {% if workspace.viewer_role == 'employee' %}
+      <section class="employee-intro">
+        <div class="employee-intro-copy">
+          <div class="eyebrow">Как работать</div>
+          <h2>Смена — через Telegram-чат точки</h2>
+          <p>Команды вашей сети: <code>{{ workspace.automation.settings.commands.start_shift }}</code> — открыть смену, <code>{{ workspace.automation.settings.commands.end_shift }}</code> — закрыть, <code>{{ workspace.automation.settings.commands.handover }}</code> — передать другому сотруднику. Отдельное приложение не нужно.</p>
+          <p class="muted">Ниже — только точки, к которым у вас есть доступ, и данные, которые владелец разрешил видеть сотруднику. Сводки зарплаты и финансов всей сети скрыты от этой роли.</p>
+        </div>
+      </section>
+      {% endif %}
+
+      <div class="content-grid">
+        <section class="panel wide overview-panel">
+          <div class="panel-heading"><div><div class="eyebrow">Сеть</div><h2>Обзор ПВЗ</h2></div></div>
+          <ul class="overview-summary">
+            <li class="overview-pill"><strong>{{ workspace.network_overview.counts.total }}</strong> всего</li>
+            <li class="overview-pill operating"><strong>{{ workspace.network_overview.counts.operating }}</strong> сейчас работает</li>
+            <li class="overview-pill attention"><strong>{{ workspace.network_overview.counts.attention }}</strong> требуют внимания</li>
+          </ul>
+          {% if workspace.network_overview.points %}
+          <div class="point-grid">
+            {% for card in workspace.network_overview.points %}
+            <article class="point-card state-{{ card.state }}">
+              <div class="point-card-state"><i aria-hidden="true"></i>{% if card.state == 'open' %}Смена открыта{% elif card.state == 'attention' %}Внимание{% elif card.state == 'not-connected' %}Не подключено{% else %}Вне расписания{% endif %}</div>
+              <h3>{{ card.point_name }}</h3>
+              <p>{{ card.detail }}</p>
+            </article>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="muted">Добавьте первую точку, чтобы видеть её статус здесь.</p>
+          {% endif %}
+        </section>
+
+        <section class="panel wide"><div class="panel-heading"><div><div class="eyebrow">Сеть</div><h2>ПВЗ</h2></div></div>
+          <div class="point-list">{% for point in workspace.points %}<div class="point"><div><strong>{{ point.name }}</strong><span>{{ point.address or 'Адрес ещё не указан' }}{% if point.telegram_chat_id %} · Telegram: {{ point.telegram_chat_title or point.telegram_chat_id }}{% endif %}</span></div><em>{{ point.status }}</em></div>{% else %}<p class="muted">Добавьте первую точку, чтобы подключить чат и сотрудников.</p>{% endfor %}</div>
+          {% if workspace.can_manage_structure %}<form method="post" action="{{ url_for('workspace_point') }}" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Название<input name="name" maxlength="120" required placeholder="ПВЗ на Ленина"></label><label>Адрес<input name="address" maxlength="240" placeholder="ул. Ленина, 14"></label><button class="button primary" type="submit">Добавить ПВЗ</button></form>{% endif %}
+          {% if workspace.points and workspace.can_manage_structure %}<form method="post" action="{{ url_for('workspace_chat') }}" class="inline-form chat-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>ПВЗ<select name="point_id">{% for point in workspace.points %}<option value="{{ point.id }}">{{ point.name }}</option>{% endfor %}</select></label><label>Telegram chat id<input name="chat_id" required placeholder="-100..."></label><label>Название чата<input name="chat_title" maxlength="160" placeholder="Рабочий чат ПВЗ"></label><label>Начало<input type="time" name="start_time" value="09:00" required></label><label>Конец<input type="time" name="end_time" value="18:00" required></label><button class="button quiet" type="submit">Подключить чат</button></form>{% endif %}
+        </section>
+
+        <section class="panel wide"><div class="eyebrow">История расчётов</div><h2>Зарплата за период</h2>{% if workspace.payroll_periods %}<form method="get" action="{{ url_for('workspace') }}" class="inline-form"><label>Расчётный период<select name="payroll_period">{% for period in workspace.payroll_periods %}<option value="{{ period.key }}" {% if period.key == workspace.payroll_period_key %}selected{% endif %}>{{ period.label }}</option>{% endfor %}</select></label><button class="button quiet" type="submit">Показать</button></form><p><a class="button quiet" href="{{ url_for('workspace_payroll_export', payroll_period=workspace.payroll_period_key) }}">Скачать payroll CSV</a></p>{% endif %}{% if workspace.payroll %}{% for payroll in workspace.payroll %}<div class="finance-summary-row"><span>{{ payroll.point_name }} · {{ payroll.period_start }}–{{ payroll.period_end }}</span><strong>{{ '%.2f'|format(payroll.total_hours) }} ч · {{ '%.2f'|format(payroll.total_earned) }} ₽</strong></div>{% if payroll.workers %}<div class="finance-list">{% for worker in payroll.workers %}<div class="finance-row"><span>{{ worker.full_name or worker.username or ('Telegram #' ~ worker.user_id) }}</span><strong>{{ '%.2f'|format(worker.total_hours) }} ч · {{ '%.2f'|format(worker.total_earned) }} ₽</strong></div>{% endfor %}</div>{% else %}<p class="muted">За выбранный период смен пока нет.</p>{% endif %}{% if payroll.shift_history %}<details><summary>Смены · {{ payroll.shift_history|length }}</summary><div class="finance-list">{% for shift in payroll.shift_history %}<div class="finance-row"><span>{{ shift.full_name or shift.username or ('Telegram #' ~ shift.user_id) }} · {{ shift.start_time[:16] }}{% if shift.is_active %} · идёт{% elif shift.end_time %}–{{ shift.end_time[:16] }}{% endif %}</span><strong>{{ '%.2f'|format(shift.hours_worked) }} ч · {{ '%.2f'|format(shift.earned_amount) }} ₽</strong></div>{% endfor %}</div></details>{% endif %}{% endfor %}{% elif workspace.viewer_role == 'employee' %}<p class="muted restricted-note"><i aria-hidden="true"></i>Сводка зарплаты по точке видна владельцу и управляющему. Вашу ставку — общую по точке и личную, если её настроил владелец, — можно посмотреть в разделе «Оплата труда» ниже.</p>{% else %}<p class="muted">Подключите Telegram-чат к ПВЗ, чтобы видеть расчёты смен.</p>{% endif %}</section>
+
+        <section class="panel"><div class="eyebrow">Команда</div><h2>Пригласить</h2>{% if workspace.can_manage_structure %}<form method="post" action="{{ url_for('workspace_staff_registration') }}" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label class="check"><input type="checkbox" name="enabled" value="1" {% if workspace.organization.staff_registration_enabled %}checked{% endif %}> Разрешить регистрацию по приглашениям</label><p class="muted">Ссылка действует 7 дней и используется один раз.</p><button class="button quiet" type="submit">Сохранить настройку</button></form><form method="post" action="{{ url_for('workspace_invite') }}" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Telegram или контакт<input name="contact" maxlength="160" required placeholder="@username"></label><label>Роль<select name="role"><option value="employee">Сотрудник</option><option value="manager">Управляющий</option></select></label><button class="button primary" type="submit">Создать приглашение</button></form>{% if workspace.points and workspace.members|selectattr('role', 'ne', 'owner')|list %}<div class="eyebrow" style="margin-top:1.25rem">Доступ управляющих</div><form method="post" action="{{ url_for('workspace_access') }}" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Участник<select name="member_user_id">{% for member in workspace.members if member.role != 'owner' %}<option value="{{ member.web_user_id }}">{{ member.role }} · ID {{ member.web_user_id }}</option>{% endfor %}</select></label><label>ПВЗ<select name="point_id">{% for point in workspace.points %}<option value="{{ point.id }}">{{ point.name }}</option>{% endfor %}</select></label><label>Действие<select name="granted"><option value="1">Разрешить</option><option value="0">Отозвать</option></select></label><button class="button quiet" type="submit">Обновить доступ</button></form>{% endif %}{% else %}<p class="muted restricted-note"><i aria-hidden="true"></i>Приглашать новых участников и управлять их доступом может только владелец.</p>{% endif %}</section>
+
+        {% if workspace.can_manage_finance %}<section class="panel wide"><div class="eyebrow">Управленческий учёт</div><h2>Финансы ПВЗ</h2><p class="muted">Суммы хранятся в копейках, источник ручной ввод. Бухгалтерией это не является.</p><p><a class="button quiet" href="{{ url_for('workspace_finance_export') }}">Скачать CSV</a></p>{% if workspace.finance_summary %}<div class="finance-summary">{% for summary in workspace.finance_summary %}<div class="finance-summary-row"><span>{{ summary.point_name }}</span><span>Доходы {{ '%.2f'|format(summary.income_minor / 100) }} ₽</span><span>Расходы {{ '%.2f'|format(summary.expense_minor / 100) }} ₽</span><strong class="{{ 'income' if summary.profit_minor >= 0 else 'expense' }}">Результат {{ '%.2f'|format(summary.profit_minor / 100) }} ₽</strong></div>{% endfor %}</div>{% endif %}{% if workspace.points %}<form method="post" action="{{ url_for('workspace_finance') }}" class="finance-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>ПВЗ<select name="point_id">{% for point in workspace.points %}<option value="{{ point.id }}">{{ point.name }}</option>{% endfor %}</select></label><label>Тип<select name="kind"><option value="income">Доход / поощрение</option><option value="expense">Расход</option></select></label><label>Категория<input name="category" maxlength="80" required placeholder="Аренда"></label><label>Сумма, ₽<input name="amount" inputmode="decimal" required placeholder="50000"></label><label>Месяц<input name="period_month" type="month" required></label><label class="full">Комментарий<textarea name="note" maxlength="500" rows="2"></textarea></label><button class="button primary" type="submit">Сохранить запись</button></form>{% else %}<p class="muted">Сначала добавьте ПВЗ.</p>{% endif %}<div class="finance-list">{% for item in workspace.finance %}<div class="finance-row"><span>{{ item.point_name }} · {{ item.category }}</span><strong class="{{ item.kind }}">{{ '+' if item.kind == 'income' else '−' }} {{ '%.2f'|format(item.amount_minor / 100) }} ₽</strong></div>{% else %}<p class="muted">Записей пока нет.</p>{% endfor %}</div></section>{% endif %}
+
+        <section class="panel"><div class="eyebrow">Оплата труда</div><h2>Ставки</h2><p class="muted">Общая ставка действует для точки. Персональную ставку можно показать только сотруднику или скрыть от остальных участников.</p><div class="finance-list">{% for rate in workspace.rates %}<div class="finance-row"><span>{{ rate.point_name }} · {{ 'общая' if rate.scope == 'point' else ('участник #' ~ rate.member_web_user_id) }}{% if rate.visibility == 'hidden' %} · скрытая{% elif rate.scope == 'member' %} · персональная{% endif %}</span><strong>{{ '%.2f'|format(rate.amount_minor / 100) }} ₽/ч</strong></div>{% else %}<p class="muted">Ставки ещё не настроены.</p>{% endfor %}</div>{% if workspace.can_manage_structure and workspace.points %}<form method="post" action="{{ url_for('workspace_rate') }}" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>ПВЗ<select name="point_id">{% for point in workspace.points %}<option value="{{ point.id }}">{{ point.name }}</option>{% endfor %}</select></label><label>Участник<select name="member_user_id"><option value="">Общая ставка</option>{% for member in workspace.members if member.role != 'owner' %}<option value="{{ member.web_user_id }}">{{ member.role }} · ID {{ member.web_user_id }}</option>{% endfor %}</select></label><label>Ставка, ₽/ч<input name="amount" inputmode="decimal" required placeholder="250"></label><label>Видимость<select name="visibility"><option value="personal">Только участнику и владельцу</option><option value="hidden">Скрыть от остальных участников</option></select></label><button class="button primary" type="submit">Сохранить ставку</button></form>{% elif workspace.viewer_role == 'manager' %}<p class="muted restricted-note"><i aria-hidden="true"></i>Настраивать ставки может только владелец.</p>{% endif %}</section>
+
+        <section class="panel"><div class="eyebrow">Аудит</div><h2>Последние действия</h2>{% if workspace.audit %}<div class="finance-list">{% for event in workspace.audit %}<div class="finance-row"><span>{{ event.action_label }} · {{ event.entity_label }}{% if event.entity_id %} #{{ event.entity_id }}{% endif %}</span><small>{{ event.actor_label }} · {{ event.created_at[:16] }}</small></div>{% endfor %}</div>{% elif workspace.viewer_role == 'employee' %}<p class="muted restricted-note"><i aria-hidden="true"></i>Журнал действий видят владелец и управляющий.</p>{% else %}<p class="muted">Журнал пока пуст.</p>{% endif %}</section>
+
+<section class="panel"><div class="eyebrow">Сценарии</div><h2>Команды и уведомления</h2><p class="muted">Все подписи можно адаптировать под привычки вашей сети. Пресет меняет значения, а затем их можно отредактировать.</p>{% if workspace.can_manage_structure %}<form method="post" action="{{ url_for('workspace_automation') }}" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Пресет<select name="preset">{% for key, preset in automation_presets.items() %}<option value="{{ key }}" {% if workspace.automation.preset == key %}selected{% endif %}>{{ preset.label }}</option>{% endfor %}<option value="custom" {% if workspace.automation.preset == 'custom' %}selected{% endif %}>Свой</option></select></label><label class="check"><input type="checkbox" name="apply_preset" value="1"> Применить выбранный пресет</label><label>Открыть смену<input name="start_shift" maxlength="40" value="{{ workspace.automation.settings.commands.start_shift }}"></label><label>Закрыть смену<input name="end_shift" maxlength="40" value="{{ workspace.automation.settings.commands.end_shift }}"></label><label>Передать смену<input name="handover" maxlength="40" value="{{ workspace.automation.settings.commands.handover }}"></label><div class="number-grid"><label>Сотруднику, дней<input type="number" min="0" max="30" name="employee_payroll_days_before" value="{{ workspace.automation.settings.notifications.employee_payroll_days_before }}"></label><label>Время сотруднику<input type="time" name="employee_payroll_time" value="{{ workspace.automation.settings.notifications.employee_payroll_time|default('10:00') }}"></label><label>Управляющему, дней<input type="number" min="0" max="30" name="manager_payroll_days_before" value="{{ workspace.automation.settings.notifications.manager_payroll_days_before }}"></label><label>Время управляющему<input type="time" name="manager_payroll_time" value="{{ workspace.automation.settings.notifications.manager_payroll_time|default('10:00') }}"></label><label>Владельцу, дней<input type="number" min="0" max="30" name="owner_payroll_days_before" value="{{ workspace.automation.settings.notifications.owner_payroll_days_before }}"></label><label>Время владельцу<input type="time" name="owner_payroll_time" value="{{ workspace.automation.settings.notifications.owner_payroll_time|default('10:00') }}"></label><label>Тревога, минут<input type="number" min="0" max="60" name="shift_alert_minutes" value="{{ workspace.automation.settings.notifications.shift_alert_minutes }}"></label></div><button class="button primary" type="submit">Сохранить сценарии</button></form>{% else %}<p class="muted restricted-note"><i aria-hidden="true"></i>Изменять команды и уведомления может только владелец.</p>{% endif %}</section>
+      </div>
+      {% if workspace.can_manage_structure %}<dialog id="renew" class="renew-dialog"><form method="post" action="{{ url_for('workspace_renew') }}"><button class="dialog-close" type="button" onclick="document.getElementById('renew').close()">×</button><div class="eyebrow">Продление</div><h2>Продлить подписку</h2><p class="muted">Код выдаётся после оплаты. Один код продлевает выбранный период и используется однократно.</p><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Код продления<input name="code" maxlength="80" required placeholder="PVZ-..."></label><label>Период<select name="days"><option value="30">30 дней</option><option value="90">90 дней</option><option value="365">Год</option></select></label><button class="button primary" type="submit">Продлить</button></form></dialog>{% endif %}
+    {% endif %}
+  </main>
+</body>
+</html>

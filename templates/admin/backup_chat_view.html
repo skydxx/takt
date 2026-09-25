@@ -1,0 +1,84 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Просмотр чата {{ chat_data.chat_name }} — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>💬 {{ chat_data.chat_name }}</h1>
+    <p style="color: var(--text-secondary);">Бэкап от {{ backup_date }}</p>
+</div>
+
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('view_backup', backup_date=backup_date) }}" class="btn" style="background: var(--bg-tertiary);">
+        <i data-lucide="arrow-left"></i>
+        Назад к списку чатов
+    </a>
+</div>
+
+<div class="grid-container">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Информация о чате</span>
+        </div>
+        <div class="card-content">
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem;">
+                <strong>Chat ID:</strong>
+                <span>{{ chat_data.chat_id }}</span>
+                
+                <strong>Название:</strong>
+                <span>{{ chat_data.chat_name }}</span>
+                
+                <strong>Дата бэкапа:</strong>
+                <span>{{ chat_data.backup_date }}</span>
+                
+                <strong>Время создания:</strong>
+                <span>{{ chat_data.backup_timestamp }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <span class="card-title">Статистика чата</span>
+    </div>
+    <div class="card-content">
+        {% if chat_data.statistics %}
+            <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; max-height: 600px;">{{ chat_data.statistics | tojson(indent=2) }}</pre>
+        {% else %}
+            <p style="color: var(--text-secondary);">Нет статистики</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if chat_data.statistics and chat_data.statistics.workers %}
+<div class="card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <span class="card-title">Работники ({{ chat_data.statistics.workers|length }})</span>
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Часы</th>
+                    <th>Заработано</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for worker in chat_data.statistics.workers %}
+                <tr>
+                    <td>{{ worker.user_id }}</td>
+                    <td>{{ worker.full_name or worker.username }}</td>
+                    <td>{{ worker.hours_worked or 0 }}ч</td>
+                    <td>{{ worker.earned_amount or 0 }} ₽</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

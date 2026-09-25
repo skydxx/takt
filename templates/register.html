@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация — Такт{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=1">{% endblock %}
+{% block body_class %}auth-page auth-register-page{% endblock %}
+
+{% block content %}
+<div class="auth-atmosphere" aria-hidden="true"><span></span><span></span></div>
+<a class="auth-brand" href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="34" height="34">Такт</a>
+<section class="auth-shell register-shell">
+  <div class="auth-story register-story">
+    <div class="auth-kicker"><i></i> Подключение сети</div>
+    <h1>{% if invite %}Присоединяйтесь к команде.{% else %}Соберите сеть в одном окне.{% endif %}</h1>
+    <p>{% if invite %}Вас пригласили в «{{ invite.organization_name }}» как {{ 'управляющего' if invite.role == 'manager' else 'сотрудника' }}.{% else %}Код подключения выдаётся после подтверждения оплаты и активирует кабинет владельца.{% endif %}</p>
+    <ol class="auth-steps"><li><span>01</span>Создайте защищённый аккаунт</li><li><span>02</span>Активируйте доступ кодом</li><li><span>03</span>Добавьте ПВЗ и команду</li></ol>
+  </div>
+  <div class="auth-panel register-panel">
+    <div class="auth-panel-head"><span class="auth-icon"><i data-lucide="user-plus"></i></span><div><div class="auth-kicker">Новый аккаунт</div><h2>Регистрация</h2></div></div>
+    {% if invite %}<div class="auth-note success-note">Приглашение найдено · {{ invite.organization_name }}</div>{% endif %}
+    <form method="POST">
+      <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+      {% if invite %}<input type="hidden" name="invite_token" value="{{ invite_token }}">{% endif %}
+      <div class="form-group"><label for="username">Логин</label><input type="text" id="username" name="username" class="form-input" required minlength="3" maxlength="64" pattern="[\w][\w.\-]{2,63}" placeholder="team.owner"><small>3–64 символа: буквы, цифры, точка, дефис или подчёркивание.</small></div>
+      {% if not invite %}<div class="form-group"><label for="owner_code">Код подключения</label><input type="text" id="owner_code" name="owner_code" class="form-input" required placeholder="PVZ-..." autocomplete="one-time-code"></div>{% endif %}
+      <div class="auth-field-grid">
+        <div class="form-group"><label for="password">Пароль</label><input type="password" id="password" name="password" class="form-input" required minlength="12" maxlength="256" placeholder="Не менее 12 символов"></div>
+        <div class="form-group"><label for="confirm_password">Повторите пароль</label><input type="password" id="confirm_password" name="confirm_password" class="form-input" required placeholder="Ещё раз"></div>
+      </div>
+      <div class="auth-note"><strong>Восстановление доступа</strong><span>Ответы сохраняются в защищённом виде. Используйте ответы, которые несложно вспомнить только вам.</span></div>
+      <div class="form-group"><label for="question1">Название вашей первой школы</label><input type="text" id="question1" name="answer1" class="form-input" required placeholder="Ответ"></div>
+      <div class="form-group"><label for="question2">Девичья фамилия матери</label><input type="text" id="question2" name="answer2" class="form-input" required placeholder="Ответ"></div>
+      <div class="form-group"><label for="question3">Кличка первого домашнего животного</label><input type="text" id="question3" name="answer3" class="form-input" required placeholder="Ответ"></div>
+      <button type="submit" class="auth-submit">Создать аккаунт <span>→</span></button>
+      <div class="auth-links single"><a href="{{ url_for('login') }}">Уже есть аккаунт? Войти</a></div>
+    </form>
+  </div>
+</section>
+{% endblock %}

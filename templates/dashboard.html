@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Главная — Такт{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Панель управления</h1>
+</div>
+
+<div class="grid-container">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Ваш статус</span>
+            <i data-lucide="user-check" style="color: var(--success);"></i>
+        </div>
+        <div class="card-content">
+            <p><strong>{{ user.username }}</strong></p>
+            <p class="text-secondary">{% if user.is_admin %}Администратор{% else %}Пользователь{% endif %}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Быстрые действия</span>
+            <i data-lucide="zap" style="color: var(--accent-primary);"></i>
+        </div>
+        <div class="card-content" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="{{ url_for('salary') }}" class="badge badge-success" style="text-decoration: none;">Зарплата</a>
+            {% if user.is_admin %}
+            <a href="{{ url_for('backups') }}" class="badge badge-danger" style="text-decoration: none;">Бэкапы</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Последние новости</span>
+        <i data-lucide="bell"></i>
+    </div>
+    <div class="card-content">
+        <p>Добро пожаловать в кабинет Такт.</p>
+        <p>Здесь вы можете просматривать зарплату, настройки и состояние рабочих процессов.</p>
+    </div>
+</div>
+{% endblock %}

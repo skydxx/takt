@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить товар — Такт{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Добавление VPN товара</h1>
+    <a href="{{ url_for('vpn') }}" class="action-btn" style="background-color: var(--bg-tertiary);">
+        <i data-lucide="arrow-left"></i>
+        Назад
+    </a>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header">
+        <span class="card-title">Информация о товаре</span>
+    </div>
+    <div class="card-content">
+        <form method="POST" action="{{ url_for('vpn_add') }}">
+            <div class="form-group">
+                <label for="name">Название</label>
+                <input type="text" id="name" name="name" class="form-input" required placeholder="Например: Netherlands Fast">
+            </div>
+            
+            <div class="form-group">
+                <label for="country">Страна</label>
+                <input type="text" id="country" name="country" class="form-input" placeholder="Например: 🇳🇱 Нидерланды">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Описание</label>
+                <textarea id="description" name="description" class="form-input" rows="3" placeholder="Краткое описание товара..."></textarea>
+            </div>
+            
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label for="price">Цена (₽)</label>
+                    <input type="number" id="price" name="price" class="form-input" required min="0" step="10">
+                </div>
+                <div>
+                    <label for="period_days">Период (дней)</label>
+                    <input type="number" id="period_days" name="period_days" class="form-input" required value="30" min="1">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="keys">Ключи (по одному на строку)</label>
+                <textarea id="keys" name="keys" class="form-input" rows="5" required placeholder="vless://..."></textarea>
+                <p class="text-secondary" style="font-size: 0.8rem; margin-top: 0.5rem;">Каждая строка будет добавлена как отдельный ключ для продажи.</p>
+            </div>
+            
+            <button type="submit" class="btn-primary">Добавить товар и ключи</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

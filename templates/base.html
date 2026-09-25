@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Такт{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts-inter.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/vendor/lucide.min.js') }}"></script>
+    {% block head %}{% endblock %}
+</head>
+<body class="dark-theme {% block body_class %}{% endblock %}">
+    <div class="app-container">
+        {% if request.endpoint not in ('login', 'register') %}
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="30" height="30">
+                <span>Такт</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Главная</span>
+                </a>
+                
+                {% if not is_linked %}
+                <a href="{{ url_for('link_account') }}" class="nav-item {% if request.endpoint == 'link_account' %}active{% endif %}">
+                    <i data-lucide="link"></i>
+                    <span>Присоединиться</span>
+                </a>
+                {% else %}
+                <a href="{{ url_for('reset_telegram') }}" class="nav-item {% if request.endpoint == 'reset_telegram' %}active{% endif %}">
+                    <i data-lucide="unlink"></i>
+                    <span>Сбросить Telegram</span>
+                </a>
+                {% endif %}
+                
+                {% if is_linked %}
+                <a href="{{ url_for('salary') }}" class="nav-item {% if request.endpoint == 'salary' %}active{% endif %}">
+                    <i data-lucide="coins"></i>
+                    <span>Зарплата</span>
+                </a>
+                {% endif %}
+                
+                {% if is_admin or is_super_admin %}
+                <div class="nav-divider">Администрирование</div>
+                <p class="nav-note">Панель оператора вынесена на отдельный админ-домен — здесь её больше нет.</p>
+                {% endif %}
+
+                <div class="nav-divider">Продукт</div>
+                <a href="{{ url_for('index') }}" class="nav-item">
+                    <i data-lucide="external-link"></i>
+                    <span>О Такте</span>
+                </a>
+            </nav>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span class="username">{{ user.username if user else 'Guest' }}</span>
+                    <span class="role">
+                        {% if is_super_admin %}Владелец{% elif is_admin %}Администратор{% elif is_view_admin %}View Admin{% elif is_linked %}Пользователь{% else %}Гость{% endif %}
+                    </span>
+                </div>
+                <form method="post" action="{{ url_for('logout') }}" class="logout-form">
+                    <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+                    <button type="submit" class="logout-btn" title="Выйти">
+                        <i data-lucide="log-out"></i>
+                    </button>
+                </form>
+            </div>
+        </aside>
+        {% endif %}
+
+        <main class="main-content {% if request.endpoint in ('login', 'register') %}full-width{% endif %}">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

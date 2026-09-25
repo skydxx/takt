@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Присоединиться — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>🔗 Присоединиться</h1>
+    <p style="color: var(--text-secondary);">Свяжите ваш аккаунт с Telegram для доступа ко всем функциям</p>
+</div>
+
+<div class="grid-container" style="max-width: 600px; margin: 0 auto;">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Как связать аккаунт</span>
+        </div>
+        <div class="card-content" style="line-height: 1.8;">
+            <ol style="padding-left: 1.5rem;">
+                <li>Откройте бота в Telegram</li>
+                <li>Отправьте команду <code style="background: var(--bg-tertiary); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">/link</code></li>
+                <li>Скопируйте полученный ключ</li>
+                <li>Введите ключ в поле ниже</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Ввод ключа связывания</span>
+        </div>
+        <div class="card-content">
+            <form method="POST">
+                <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+                <div class="form-group">
+                    <label for="key_code">Ключ из бота</label>
+                    <input type="text" id="key_code" name="key_code" class="form-input" required 
+                           placeholder="Вставьте ключ" autocomplete="off"
+                           style="font-family: monospace; font-size: 1.1rem;">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                        Ключ действителен 1 час и может быть использован только один раз
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i data-lucide="link" style="width: 18px; height: 18px;"></i>
+                    Связать аккаунт
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3);">
+        <div class="card-content">
+            <h3 style="margin-top: 0; color: var(--accent-primary);">✨ Что вы получите после связывания</h3>
+            <ul style="line-height: 1.8; color: var(--text-secondary);">
+                <li>Доступ к статистике зарплаты</li>
+                <li>Просмотр активных смен</li>
+                <li>Доступ к личным данным и отчетам</li>
+                <li>Автоматическое определение ваших прав (админ, пользователь)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

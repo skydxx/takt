@@ -1,0 +1,89 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Админка — Такт{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Настройки системы</h1>
+</div>
+
+<div class="grid-container">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Пользователи веб-панели</span>
+            <a href="{{ url_for('admin_users') }}" class="action-btn" style="font-size: 0.875rem; padding: 0.25rem 0.5rem; text-decoration: none;">
+                <i data-lucide="users"></i> Управление
+            </a>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Логин</th>
+                        <th>Роль</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if users %}
+                        {% for u in users[:5] %}
+                        <tr>
+                            <td>{{ u.user_id }}</td>
+                            <td>{{ u.username }}</td>
+                            <td>
+                                {% if u.is_admin %}
+                                <span class="status-badge success">Администратор</span>
+                                {% else %}
+                                <span class="status-badge">Пользователь</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if is_super_admin and u.user_id != user.user_id %}
+                                <a href="{{ url_for('toggle_admin', user_id=u.user_id) }}" 
+                                   class="btn-icon" 
+                                   title="Изменить права">
+                                    <i data-lucide="shield"></i>
+                                </a>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if users|length > 5 %}
+                        <tr>
+                            <td colspan="4" style="text-align: center;">
+                                <a href="{{ url_for('admin_users') }}" style="color: var(--accent-primary);">Показать всех ({{ users|length }})</a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-secondary);">Нет пользователей</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Системные настройки</span>
+        </div>
+        <div class="card-content">
+            <form>
+                <div class="form-group">
+                    <label>Домен сайта</label>
+                    <input type="text" class="form-input" value="{{ request.host }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Версия бота</label>
+                    <input type="text" class="form-input" value="2.0.0" readonly>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

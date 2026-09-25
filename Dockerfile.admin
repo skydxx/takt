@@ -1,0 +1,35 @@
+# Admin/operator WSGI app — /admin*, /owner*, /backups*. Separate image and
+# process from the public app (see Dockerfile). Bind only to an internal
+# port/host (ADMIN_BIND_HOST, default 127.0.0.1) and publish it only through
+# a reverse proxy terminating ADMIN_HOST — never publish this container's
+# port straight to the internet. See docker-compose.example.yml and
+# docs/security-baseline.md for the full threat model.
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Admin runtime package. Does not need the public app's landing/legal i18n
+# modules or web_app.py at all.
+COPY config.py core.py database.py platform_store.py platform_database.py \
+     utils.py backup_manager.py admin_routes.py admin_app.py ./
+COPY templates/admin/ ./templates/admin/
+# Admin gets only the assets referenced by templates/admin/base.html. Do not
+# copy the public landing bundle, motion media, or workspace scripts into the
+# operator image; the two runtime file surfaces should not intersect by
+# accident.
+COPY static/css/style.css static/css/fonts-inter.css ./static/css/
+COPY static/js/vendor/lucide.min.js ./static/js/vendor/
+COPY static/img/takt-mark.svg ./static/img/
+COPY static/fonts/inter-400-700-normal-cyrillic.woff2 \
+     static/fonts/inter-400-700-normal-latin.woff2 ./static/fonts/
+
+RUN useradd --create-home --uid 10001 takt && chown -R takt:takt /app
+USER takt
+
+ENV PYTHONUNBUFFERED=1
+EXPOSE 5001
+
+CMD ["python", "admin_app.py"]

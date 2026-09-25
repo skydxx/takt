@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Вход — Такт{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=1">{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-atmosphere" aria-hidden="true"><span></span><span></span></div>
+<a class="auth-brand" href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="34" height="34">Такт</a>
+<section class="auth-shell">
+  <div class="auth-story">
+    <div class="auth-kicker"><i></i> Рабочее пространство ПВЗ</div>
+    <h1>Смена начинается здесь.</h1>
+    <p>Команда, ставки, выплаты и экономика сети — без таблиц, потерянных сообщений и ручных сверок.</p>
+    <div class="auth-preview" aria-hidden="true">
+      <div class="preview-head"><span>Сеть сейчас</span><b>LIVE</b></div>
+      <div class="preview-orbit"><i></i><i></i><strong>3<small>ПВЗ</small></strong></div>
+      <div class="preview-row"><span><i></i> Ленина, 14</span><em>открыто вовремя</em></div>
+      <div class="preview-row"><span><i></i> Мира, 8</span><em>смена идёт</em></div>
+    </div>
+  </div>
+  <div class="auth-panel">
+    <div class="auth-panel-head"><span class="auth-icon"><i data-lucide="shield-check"></i></span><div><div class="auth-kicker">Защищённый вход</div><h2>С возвращением</h2></div></div>
+    <form method="POST" action="{{ url_for('login') }}">
+        <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+        <div class="form-group">
+            <label for="username">Логин</label>
+            <input type="text" id="username" name="username" class="form-input" required autofocus>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Пароль</label>
+            <input type="password" id="password" name="password" class="form-input" required>
+        </div>
+        
+        <button type="submit" class="auth-submit">Войти <span>→</span></button>
+        <div class="auth-links"><a href="{{ url_for('register') }}">Создать аккаунт</a><a href="{{ url_for('password_reset') }}">Восстановить доступ</a></div>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}VPN Store — Такт{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">VPN Store</h1>
+    {% if user.is_admin %}
+    <a href="{{ url_for('vpn') }}" class="action-btn">
+        <i data-lucide="external-link"></i>
+        Открыть каталог
+    </a>
+    {% endif %}
+</div>
+
+<div class="grid-container">
+    {% for product in products %}
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">{{ product.name }}</span>
+            <span class="badge badge-success">Active</span>
+        </div>
+        <div class="card-content">
+            <p style="margin-bottom: 1rem;">{{ product.description }}</p>
+            <p class="text-secondary" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                <i data-lucide="map-pin" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i> 
+                {{ product.country }}
+            </p>
+            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">{{ format_money(product.price) }} <span style="font-size: 0.875rem; font-weight: 400; color: var(--text-secondary);">/ {{ product.period_days }} дн.</span></h3>
+            
+            {% if product.stock > 0 %}
+            <form action="{{ url_for('vpn_buy', product_id=product.id) }}" method="post">
+                <button type="submit" class="btn-primary">Купить ({{ product.stock }} шт.)</button>
+            </form>
+            {% else %}
+            <button class="btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">Нет в наличии</button>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-content" style="text-align: center; padding: 2rem;">
+            <i data-lucide="package-open" style="width: 48px; height: 48px; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+            <p class="text-secondary">В данный момент нет доступных товаров</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Мои покупки</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Товар</th>
+                    <th>Ключ</th>
+                    <th>Дата покупки</th>
+                    <th>Сумма</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.product_name }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.8rem;">{{ order.key_data[:20] }}...</code>
+                            <button class="action-btn" style="padding: 0.2rem; font-size: 0.8rem;" onclick="navigator.clipboard.writeText('{{ order.key_data }}')">
+                                <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td>{{ order.date }}</td>
+                    <td>{{ format_money(order.amount) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-secondary);">У вас пока нет покупок</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

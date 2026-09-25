@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}VPN Store — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>🛡️ VPN Store</h1>
+    <p style="color: var(--text-secondary);">Защищенный доступ к интернету</p>
+</div>
+
+{% if has_active_order %}
+<div class="card" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); margin-bottom: 1.5rem;">
+    <div class="card-content">
+        <h3 style="margin-top: 0; color: var(--accent-primary);">⏳ У вас есть активный заказ</h3>
+        <p style="color: var(--text-secondary);">
+            Вы можете докупить устройства к существующему заказу, но не продлить время.
+            Продление будет доступно после истечения текущей подписки.
+        </p>
+        <a href="{{ url_for('my_purchases') }}" class="btn btn-primary" style="margin-top: 1rem;">
+            <i data-lucide="shopping-bag"></i>
+            Мои покупки
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div class="grid-container">
+    <!-- Калькулятор цен -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Калькулятор стоимости</span>
+        </div>
+        <div class="card-content">
+            <form method="POST" action="{{ url_for('create_vpn_order') }}" id="vpnOrderForm">
+                <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+                <!-- Выбор количества устройств -->
+                <div class="form-group">
+                    <label for="device_count">
+                        Количество устройств: <span id="deviceDisplay">1</span>
+                    </label>
+                    <input type="range" id="device_count" name="device_count" 
+                           min="1" max="15" value="1" class="slider"
+                           style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <span>1</span>
+                        <span>15</span>
+                    </div>
+                </div>
+                
+                <!-- Выбор срока -->
+                <div class="form-group">
+                    <label for="period_days">
+                        Период: <span id="periodDisplay">30</span> дней (<span id="monthsDisplay">1</span> мес.)
+                    </label>
+                    <input type="range" id="period_days" name="period_days" 
+                           min="14" max="120" value="30" class="slider"
+                           style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <span>14 дней</span>
+                        <span>120 дней</span>
+                    </div>
+                </div>
+                
+                <!-- Расчет цены -->
+                <div style="background: var(--bg-tertiary); border-radius: 0.5rem; padding: 1.5rem; margin: 1.5rem 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Итоговая стоимость</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--accent-primary); margin-top: 0.25rem;">
+                                <span id="totalPrice">100.00</span> ₽
+                            </div>
+                        </div>
+                        <div style="text-align: right; color: var(--text-secondary); font-size: 0.875rem;">
+                            <div><span id="calcDevices">1</span> устройство</div>
+                            <div><span id="calcDays">30</span> дней</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Расчет стоимости -->
+                <div style="background: rgba(59, 130, 246, 0.05); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.8;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Базовая цена (1 устройство)</span>
+                            <span>100 ₽/мес</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Дополнительные устройства</span>
+                            <span>+40 ₽/мес каждое</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color);">
+                            <span id="priceBreakdown"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Контактная информация -->
+                <div class="form-group">
+                    <label for="telegram_contact">Ваш Telegram (обязательно)</label>
+                    <input type="text" id="telegram_contact" name="telegram_contact" 
+                           class="form-input" required
+                           placeholder="@username или ссылка">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                        ⚠️ Проверьте, что:
+                        <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                            <li>Вам можно написать (открыты личные сообщения)</li>
+                            <li>Сообщения не за звезды</li>
+                            <li>Включены уведомления</li>
+                        </ul>
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="orderBtn">
+                    <i data-lucide="shopping-cart"></i>
+                    Оформить заказ
+                </button>
+                
+                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary); text-align: center;">
+                    После оформления заказа владелец свяжется с вами для подтверждения оплаты
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Информация о VPN -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Что вы получаете</span>
+        </div>
+        <div class="card-content" style="line-height: 1.8;">
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 1rem;">
+                    <i data-lucide="check-circle" style="color: var(--success); width: 20px; height: 20px; vertical-align: middle;"></i>
+                    <strong>Высокая скорость</strong> - без ограничений
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <i data-lucide="check-circle" style="color: var(--success); width: 20px; height: 20px; vertical-align: middle;"></i>
+                    <strong>Безопасность</strong> - шифрование трафика
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <i data-lucide="check-circle" style="color: var(--success); width: 20px; height: 20px; vertical-align: middle;"></i>
+                    <strong>Поддержка 24/7</strong> - всегда на связи
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <i data-lucide="check-circle" style="color: var(--success); width: 20px; height: 20px; vertical-align: middle;"></i>
+                    <strong>Простая настройка</strong> - инструкции для всех устройств
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+// Калькулятор цен
+const deviceSlider = document.getElementById('device_count');
+const periodSlider = document.getElementById('period_days');
+const deviceDisplay = document.getElementById('deviceDisplay');
+const periodDisplay = document.getElementById('periodDisplay');
+const monthsDisplay = document.getElementById('monthsDisplay');
+const totalPriceEl = document.getElementById('totalPrice');
+const calcDevices = document.getElementById('calcDevices');
+const calcDays = document.getElementById('calcDays');
+const priceBreakdown = document.getElementById('priceBreakdown');
+
+const BASE_PRICE = 100;  // за месяц
+const ADDITIONAL_DEVICE = 40;  // за каждое доп. устройство в месяц
+
+function calculatePrice(devices, days) {
+    let monthlyPrice = BASE_PRICE;
+    if (devices > 1) {
+        monthlyPrice += (devices - 1) * ADDITIONAL_DEVICE;
+    }
+    
+    // Пропорционально дням
+    const totalPrice = (monthlyPrice / 30) * days;
+    return totalPrice.toFixed(2);
+}
+
+function updatePrice() {
+    const devices = parseInt(deviceSlider.value);
+    const days = parseInt(periodSlider.value);
+    const months = (days / 30).toFixed(1);
+    
+    deviceDisplay.textContent = devices;
+    periodDisplay.textContent = days;
+    monthsDisplay.textContent = months;
+    
+    const price = calculatePrice(devices, days);
+    totalPriceEl.textContent = price;
+    
+    calcDevices.textContent = devices;
+    calcDays.textContent = days;
+    
+    // Детальный расчет
+    let monthlyBase = BASE_PRICE;
+    if (devices > 1) {
+        monthlyBase += (devices - 1) * ADDITIONAL_DEVICE;
+    }
+    priceBreakdown.innerHTML = `${monthlyBase} ₽/мес × ${months} мес = ${price} ₽`;
+}
+
+deviceSlider.addEventListener('input', updatePrice);
+periodSlider.addEventListener('input', updatePrice);
+
+// Проверка частоты заказов
+let canOrder = true;
+document.getElementById('vpnOrderForm').addEventListener('submit', function(e) {
+    if (!canOrder) {
+        e.preventDefault();
+        alert('Подождите 2 минуты перед созданием нового заказа');
+        return false;
+    }
+    
+    canOrder = false;
+    document.getElementById('orderBtn').disabled = true;
+    
+    // Разрешаем через 2 минуты
+    setTimeout(() => {
+        canOrder = true;
+        document.getElementById('orderBtn').disabled = false;
+    }, 120000);
+});
+
+// Инициализация
+updatePrice();
+</script>
+
+<style>
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 5px;
+    background: var(--bg-tertiary);
+    outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+    border: none;
+}
+</style>
+{% endblock %}

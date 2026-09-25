@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Compile
+        run: python -m compileall -q .
+      - name: Tests
+        run: pytest -q
+      - name: Lint new surface
+        run: ruff check platform_database.py platform_store.py migrate_platform_sqlite_to_postgres.py create_owner_code.py config.py tests/ public_i18n.py
+      - name: Secret pattern scan
+        shell: bash
+        run: |
+          if git grep -nE '(^|[^A-Za-z])(bot[0-9]{6,}:[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{20,})' -- ':!*.disabled' ':!legacy/*'; then
+            echo "Potential credential-like token found in tracked source"
+            exit 1
+          fi
+          python scripts/check_public_tree.py
+      - name: Verify deploy archive excludes runtime state
+        shell: bash
+        run: |
+          bash -n pack_for_deploy.sh server_setup.sh
+          if grep -q '^User=root$' server_setup.sh; then
+            echo "Application services must not run as root"
+            exit 1
+          fi
+          grep -q 'NoNewPrivileges=true' server_setup.sh
+          grep -q 'ProtectSystem=strict' server_setup.sh
+          grep -q 'PLATFORM_DATABASE_URL=postgres' server_setup.sh
+          bash pack_for_deploy.sh /tmp/tochka-smena-deploy.zip
+          names="$(unzip -Z1 /tmp/tochka-smena-deploy.zip)"
+          if printf '%s\n' "$names" | grep -E '(^|/)(\.env$|.*\.(db|sqlite|sqlite3|log|zip)$|data/)' ; then
+            echo "Runtime state or secret archive found in deploy package"
+            exit 1
+          fi
+          printf '%s\n' "$names" | grep -Fx '.env.example'

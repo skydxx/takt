@@ -1,0 +1,110 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Общая информация — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>Общая информация</h1>
+</div>
+
+{% if not is_super_admin %}
+<div class="flash-messages">
+    <div class="flash-message warning">
+        <i data-lucide="alert-triangle"></i>
+        <span>Вам доступен только ограниченный просмотр. Для полного доступа требуются права супер-администратора.</span>
+    </div>
+</div>
+{% endif %}
+
+<div class="grid-layout">
+    <!-- Секция чатов -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i data-lucide="message-square"></i> Чаты</h2>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Тип</th>
+                        <th>Настройки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for chat in chats %}
+                    <tr>
+                        <td>{{ chat.chat_id }}</td>
+                        <td>{{ chat.chat_name }}</td>
+                        <td>
+                            <span class="status-badge {% if chat.chat_type == 'work' %}success{% else %}secondary{% endif %}">
+                                {{ chat.chat_type }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if chat.work_time != "Не настроено" %}
+                                <div style="font-size: 0.9rem;">
+                                    <div>🕒 {{ chat.work_time }}</div>
+                                    <div style="color: var(--text-secondary);">💰 {{ format_money(chat.salary) }}</div>
+                                </div>
+                            {% else %}
+                                <span class="text-muted">Нет настроек</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Нет данных для отображения</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Секция сотрудников -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i data-lucide="users"></i> Сотрудники</h2>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Сотрудник</th>
+                        <th>Ставка</th>
+                        <th>Смен</th>
+                        <th>Всего заработано</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for worker in workers %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <span>{{ worker.full_name or worker.username or 'Без имени' }}</span>
+                                <span class="text-muted" style="font-size: 0.8rem;">ID: {{ worker.user_id }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if worker.custom_rate %}
+                                <span class="status-badge warning" title="Персональная ставка">{{ format_money(worker.custom_rate) }}/ч</span>
+                            {% else %}
+                                <span class="text-muted">Стандартная</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ worker.shifts_count }}</td>
+                        <td class="amount">{{ format_money(worker.total_earned) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Нет данных для отображения</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

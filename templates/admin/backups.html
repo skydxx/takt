@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Бэкапы — Такт{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Управление бэкапами</h1>
+    <form action="{{ url_for('create_backup') }}" method="post" style="display: inline;">
+        <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+        <button type="submit" class="action-btn">
+            <i data-lucide="plus"></i>
+            Создать бэкап сейчас
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Список бэкапов</span>
+        <span class="badge badge-warning">Всего: {{ backups|length }}</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Чатов</th>
+                    <th>Успешно</th>
+                    <th>Ошибок</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for backup in backups %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="calendar" style="color: var(--text-secondary);"></i>
+                            {{ backup.date }}
+                        </div>
+                    </td>
+                    <td>{{ backup.total_chats }}</td>
+                    <td>
+                        <span class="status-badge success">{{ backup.backed_up }}</span>
+                    </td>
+                    <td>
+                        {% if backup.failed > 0 %}
+                        <span class="status-badge" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5;">{{ backup.failed }}</span>
+                        {% else %}
+                        <span class="status-badge">0</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{{ url_for('view_backup', backup_date=backup.folder) }}" class="btn-icon primary" title="Просмотреть">
+                                <i data-lucide="eye"></i>
+                            </a>
+                            {% if is_super_admin %}
+                            <a href="{{ url_for('download_backup', filename=backup.folder) }}" class="btn-icon" title="Скачать" style="color: var(--success);">
+                                <i data-lucide="download"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-secondary);">Бэкапов пока нет</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

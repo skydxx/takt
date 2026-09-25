@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Мои покупки — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>🛍️ Мои покупки</h1>
+    <p style="color: var(--text-secondary);">История заказов VPN</p>
+</div>
+
+{% if orders %}
+    {% for order in orders %}
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span class="card-title">Заказ #{{ order.id }}</span>
+                {% if order.status == 'pending' %}
+                <span class="status-badge" style="background: rgba(251, 191, 36, 0.1); color: #fbbf24;">Ожидает подтверждения</span>
+                {% elif order.status == 'confirmed' %}
+                <span class="status-badge success">Подтверждено</span>
+                {% elif order.status == 'completed' %}
+                <span class="status-badge success">Завершено</span>
+                {% else %}
+                <span class="status-badge">{{ order.status }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-content">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Устройств</div>
+                    <div style="font-size: 1.25rem; font-weight: 600;">{{ order.device_count }}</div>
+                </div>
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Период</div>
+                    <div style="font-size: 1.25rem; font-weight: 600;">{{ order.period_days }} дней</div>
+                </div>
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Стоимость</div>
+                    <div style="font-size: 1.25rem; font-weight: 600; color: var(--accent-primary);">{{ order.total_price }} ₽</div>
+                </div>
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem;">Создан</div>
+                    <div style="font-size: 1.25rem; font-weight: 600;">{{ order.created_at[:10] }}</div>
+                </div>
+            </div>
+            
+            {% if order.status == 'pending' %}
+                <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1rem;">
+                    <p style="margin: 0; color: var(--text-secondary);">
+                        ⏳ Ожидаем подтверждения оплаты. Владелец свяжется с вами.
+                    </p>
+                </div>
+            {% elif order.status == 'confirmed' and order.vpn_keys %}
+                <div style="background: var(--bg-tertiary); border-radius: 0.5rem; padding: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0;">🔑 Ваши VPN ключи</h3>
+                    
+                    {% for key in order.vpn_keys %}
+                    <div style="background: var(--bg-secondary); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <strong>Устройство {{ key.device_number }}</strong>
+                            {% if key.vpn_key %}
+                            <span class="status-badge success">Готово</span>
+                            {% else %}
+                            <span class="status-badge" style="background: rgba(251, 191, 36, 0.1); color: #fbbf24;">Ожидание</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if key.vpn_key %}
+                        <div style="background: var(--bg-primary); border-radius: 0.25rem; padding: 0.75rem; font-family: monospace; font-size: 0.875rem; word-break: break-all; margin-top: 0.5rem;">
+                            {{ key.vpn_key }}
+                        </div>
+                        <button onclick="copyKey('{{ key.vpn_key }}')" class="btn" style="margin-top: 0.5rem; font-size: 0.875rem;">
+                            <i data-lucide="copy"></i>
+                            Скопировать
+                        </button>
+                        {% else %}
+                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0.5rem 0 0 0;">
+                            Ключ скоро будет добавлен владельцем
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1.5rem;">
+                        <h4 style="margin: 0 0 0.5rem 0;">📖 Инструкция по использованию</h4>
+                        <div style="color: var(--text-secondary); line-height: 1.6;">
+                            {{ instructions | safe }}
+                        </div>
+                    </div>
+                </div>
+            {% elif order.status == 'confirmed' %}
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 0.5rem; padding: 1rem;">
+                    <p style="margin: 0; color: var(--text-secondary);">
+                        ✅ Заказ подтвержден! Ключи скоро будут добавлены.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <div class="card-content" style="text-align: center; padding: 3rem;">
+            <i data-lucide="shopping-bag" style="width: 64px; height: 64px; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+            <h3 style="color: var(--text-secondary);">У вас пока нет заказов</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Оформите первый заказ VPN</p>
+            <a href="{{ url_for('vpn') }}" class="btn btn-primary">
+                <i data-lucide="shopping-cart"></i>
+                Перейти в магазин
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+function copyKey(key) {
+    navigator.clipboard.writeText(key).then(() => {
+        alert('Ключ скопирован в буфер обмена!');
+    });
+}
+</script>
+{% endblock %}

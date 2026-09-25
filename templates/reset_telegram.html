@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Сброс Telegram — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>🔓 Отвязка Telegram</h1>
+    <p style="color: var(--text-secondary);">Подтвердите отвязку аккаунта от Telegram</p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-content">
+        {% if user.telegram_linked %}
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+            <strong style="color: var(--error);">⚠️ Внимание!</strong>
+            <p style="color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                После отвязки вы потеряете доступ к функциям, требующим привязку Telegram.
+                Вы сможете привязать аккаунт заново через страницу "Присоединиться".
+            </p>
+        </div>
+        
+        <form method="POST">
+            <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+            <div class="form-group">
+                <label for="password">Ваш пароль</label>
+                <input type="password" id="password" name="password" class="form-input" required 
+                       placeholder="Введите пароль">
+            </div>
+            
+            <div style="background: var(--bg-tertiary); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                <strong>Ответьте на секретные вопросы:</strong>
+            </div>
+            
+            <div class="form-group">
+                <label for="answer1">Вопрос 1: Название вашей первой школы</label>
+                <input type="text" id="answer1" name="answer1" class="form-input" required 
+                       placeholder="Ваш ответ">
+            </div>
+            
+            <div class="form-group">
+                <label for="answer2">Вопрос 2: Девичья фамилия матери</label>
+                <input type="text" id="answer2" name="answer2" class="form-input" required 
+                       placeholder="Ваш ответ">
+            </div>
+            
+            <div class="form-group">
+                <label for="answer3">Вопрос 3: Кличка первого домашнего животного</label>
+                <input type="text" id="answer3" name="answer3" class="form-input" required 
+                       placeholder="Ваш ответ">
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; background: var(--error); color: white;" 
+                    onclick="return confirm('Точно отвязать Telegram?')">
+                <i data-lucide="unlink"></i>
+                Отвязать Telegram
+            </button>
+        </form>
+        {% else %}
+        <div style="text-align: center; padding: 2rem;">
+            <i data-lucide="link-2" style="width: 64px; height: 64px; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+            <h3 style="color: var(--text-secondary);">Telegram не привязан</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Используйте страницу "Присоединиться" для привязки</p>
+            <a href="{{ url_for('link_account') }}" class="btn btn-primary">
+                <i data-lucide="link"></i>
+                Привязать Telegram
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

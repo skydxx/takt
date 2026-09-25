@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Моя Зарплата — Такт{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Статистика зарплаты</h1>
+    <div class="actions">
+        <!-- Фильтры по периодам можно добавить позже -->
+    </div>
+</div>
+
+<div class="grid-container">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Текущий период ({{ period_str }})</span>
+            <i data-lucide="calendar-clock" style="color: var(--accent-primary);"></i>
+        </div>
+        <div class="card-content">
+            <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">{{ format_money(current.earned_amount) }}</h2>
+            <p class="text-secondary">Заработано за текущий период</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Часов отработано</span>
+            <i data-lucide="clock" style="color: var(--success);"></i>
+        </div>
+        <div class="card-content">
+            <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">{{ format_hours(current.hours_worked) }}</h2>
+            <p class="text-secondary">Всего часов за период</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">История</span>
+            <i data-lucide="history" style="color: var(--warning);"></i>
+        </div>
+        <div class="card-content">
+            <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">{{ history|length }}</h2>
+            <p class="text-secondary">Прошлых периодов</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">История выплат</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Период</th>
+                    <th>Часы</th>
+                    <th>Сумма</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in history %}
+                <tr>
+                    <td>{{ item.period_str }}</td>
+                    <td>{{ format_hours(item.hours) }}</td>
+                    <td>{{ format_money(item.amount) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" style="text-align: center; color: var(--text-secondary);">История пуста</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

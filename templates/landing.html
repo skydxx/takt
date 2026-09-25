@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="{{ current_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ copy.hero_text }}">
+  <meta name="theme-color" content="#050505">
+  <title>{{ copy.brand }} — {{ copy.hero_title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=12">
+  <script>(function(){try{if(sessionStorage.getItem('takt-lang-switch')){document.documentElement.classList.add('lang-pending');}}catch(e){}})();</script>
+</head>
+<body>
+  <svg class="glass-filters" aria-hidden="true">
+    <filter id="liquid-refraction" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="1" seed="11" result="noise"/>
+      <feGaussianBlur in="noise" stdDeviation="1.2" result="softNoise"/>
+      <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="9" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+  <div class="page-light" aria-hidden="true"></div>
+
+  <header class="site-nav liquid-surface">
+    <a href="/" class="brand" aria-label="{{ copy.brand }}">
+      <img src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="38" height="38">
+      <span>{{ copy.brand }}</span>
+    </a>
+    <nav class="nav-links" aria-label="Navigation">
+      <a href="#features">{{ copy.nav_features }}</a>
+      <a href="#how">{{ copy.nav_how }}</a>
+      <a href="#pricing">{{ copy.nav_pricing }}</a>
+      <a href="#faq">{{ copy.nav_faq }}</a>
+    </nav>
+    <div class="nav-actions">
+      <div class="language-switch" aria-label="{{ copy.nav_language }}">
+        <a class="{% if current_lang == 'ru' %}active{% endif %}" href="{{ url_for('set_language', code='ru') }}">RU</a><span>/</span><a class="{% if current_lang == 'en' %}active{% endif %}" href="{{ url_for('set_language', code='en') }}">EN</a>
+      </div>
+      <a class="nav-login" href="{{ url_for('login') }}">{{ copy.nav_login }}</a>
+      <a class="nav-cta" href="#connect">{{ copy.hero_primary }}</a>
+      <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false"><span></span><span></span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero section-pad">
+      <div class="hero-copy reveal">
+        <a class="hero-kicker liquid-chip" href="#features"><span class="signal-dot"></span>{{ copy.hero_eyebrow }}<b>↘</b></a>
+        <h1>{{ copy.hero_title }}</h1>
+        <p>{{ copy.hero_text }}</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#connect">{{ copy.hero_primary }}<span>↗</span></a>
+          <a class="button button-link" href="#how">{{ copy.hero_secondary }}<span>↓</span></a>
+        </div>
+        <div class="hero-note"><span></span>{{ copy.hero_note }}</div>
+      </div>
+
+      <div id="hero-art" class="hero-art reveal delay-1" aria-hidden="true">
+        <div class="object-aura"></div>
+        <div class="kinetic-orbit" data-tilt>
+          <svg class="control-network" viewBox="0 0 500 500" role="img" aria-hidden="true">
+            <defs>
+              <radialGradient id="hubFill" cx="34%" cy="26%" r="78%">
+                <stop offset="0%" stop-color="#fbfaf6" stop-opacity=".92"/>
+                <stop offset="45%" stop-color="#c7cdd2" stop-opacity=".22"/>
+                <stop offset="100%" stop-color="#0c0c0c" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <g class="routes">
+              <path class="route" d="M250,250 L125,135"/>
+              <path class="route" d="M250,250 L385,125"/>
+              <path class="route" d="M250,250 L405,355"/>
+              <path class="route" d="M250,250 L135,385"/>
+            </g>
+            <circle class="hub-halo" cx="250" cy="250" r="105"/>
+            <circle class="hub-core" cx="250" cy="250" r="76" fill="url(#hubFill)"/>
+            <circle class="hub-ring" cx="250" cy="250" r="76"/>
+            <path class="hub-mark" d="M226,238 L250,214 L274,238 M250,214 L250,278"/>
+            <g class="node node-good"><circle class="node-halo" cx="125" cy="135" r="14"/><circle class="node-dot" cx="125" cy="135" r="6"/></g>
+            <g class="node node-blue"><circle class="node-halo" cx="385" cy="125" r="12.5"/><circle class="node-dot" cx="385" cy="125" r="5.5"/></g>
+            <g class="node node-good"><circle class="node-halo" cx="405" cy="355" r="13.5"/><circle class="node-dot" cx="405" cy="355" r="6"/></g>
+            <g class="node node-warn"><circle class="node-halo" cx="135" cy="385" r="15"/><circle class="node-dot" cx="135" cy="385" r="6.5"/></g>
+            <circle class="signal signal-a" r="3.4"/>
+            <circle class="signal signal-b" r="3.1"/>
+            <circle class="signal signal-c" r="3.4"/>
+            <circle class="signal signal-d" r="3.1"/>
+          </svg>
+        </div>
+        <div class="glass-tag tag-online liquid-surface"><i></i><span>{{ copy.live_open }}</span><b>09:00</b></div>
+        <div class="glass-tag tag-points liquid-surface"><small>{{ copy.screen_points }}</small><strong>7</strong><span>+2</span></div>
+        <div class="glass-tag tag-alert liquid-surface"><span class="tag-icon">!</span><div><small>{{ copy.screen_alert }}</small><b>{{ copy.screen_alert_text }}</b></div></div>
+      </div>
+    </section>
+
+    <section class="product-proof section-pad" aria-label="{{ copy.live_label }}">
+      <div class="section-intro reveal">
+        <span class="section-number">01</span>
+        <div><div class="eyebrow">{{ copy.live_label }}</div><h2>{{ copy.features_title }}</h2></div>
+      </div>
+      <div class="console-scene reveal delay-1">
+        <div class="console-shadow"></div>
+        <div class="console-shell liquid-surface" data-tilt>
+          <div class="console-topbar">
+            <div class="console-brand"><img src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="25" height="25"><span>{{ copy.brand }}</span><em>/ {{ copy.screen_network }}</em></div>
+            <div class="console-date"><i></i>{{ copy.screen_today }} · 11:42</div>
+          </div>
+          <div class="console-body">
+            <aside class="console-nav">
+              <span class="active"><b>⌁</b>{{ copy.screen_overview }}</span>
+              <span><b>◌</b>{{ copy.screen_team }}</span>
+              <span><b>₽</b>{{ copy.screen_finance }}</span>
+              <div class="console-user"><i>{{ copy.screen_owner_initials }}</i><span>{{ copy.screen_owner_name }}<small>{{ copy.screen_owner }}</small></span></div>
+            </aside>
+            <div class="console-content">
+              <div class="console-heading"><div><small>{{ copy.screen_overview }}</small><h3>{{ copy.live_label }}</h3></div><button type="button">•••</button></div>
+              <div class="metric-strip">
+                <div><small>{{ copy.screen_points }}</small><strong>7</strong><em>{{ copy.screen_all_working }}</em></div>
+                <div><small>{{ copy.live_payroll }}</small><strong>184 260 ₽</strong><em>{{ copy.screen_period }}</em></div>
+                <div><small>{{ copy.screen_profit }}</small><strong>239 350 ₽</strong><em>{{ copy.screen_month_compare }}</em></div>
+              </div>
+              <div class="console-grid">
+                <div class="locations-panel">
+                  <div class="panel-label"><span>{{ copy.screen_point }}</span><small>{{ copy.screen_status }}</small></div>
+                  <div class="location-row"><span class="location-index">01</span><div><b>{{ copy.point_a }}</b><small>{{ copy.screen_worker_a }} · 09:00–21:00</small></div><em class="good"><i></i>{{ copy.live_open }}</em></div>
+                  <div class="location-row"><span class="location-index">02</span><div><b>{{ copy.point_b }}</b><small>{{ copy.screen_worker_b }} · 09:00–21:00</small></div><em class="good"><i></i>{{ copy.live_shift }}</em></div>
+                  <div class="location-row"><span class="location-index">03</span><div><b>{{ copy.point_c }}</b><small>{{ copy.screen_worker_c }} · 09:00–21:00</small></div><em class="warn"><i></i>{{ copy.live_attention }}</em></div>
+                </div>
+                <div class="alert-panel liquid-inner">
+                  <div class="alert-head"><span class="alert-icon">!</span><small>{{ copy.screen_twelve_min }}</small></div>
+                  <h4>{{ copy.screen_alert }}</h4><p>{{ copy.screen_alert_text }}</p><button type="button">Telegram ↗</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features-section section-pad">
+      <div class="section-intro reveal">
+        <span class="section-number">02</span>
+        <div><div class="eyebrow">{{ copy.features_eyebrow }}</div><h2>{{ copy.features_title }}</h2></div>
+      </div>
+      <div class="feature-ledger">
+        <article class="feature-row reveal">
+          <div class="feature-copy"><span>01</span><h3>{{ copy.feature_open_title }}</h3><p>{{ copy.feature_open_text }}</p></div>
+          <div class="feature-visual opening-visual liquid-surface"><div class="time-axis"><span>08:50</span><span>09:00</span><span>09:10</span></div><div class="time-line"><i></i><b></b></div><div class="event-card"><i></i><div><b>{{ copy.point_a }}</b><small>{{ copy.live_open }} · 08:58</small></div><strong>✓</strong></div></div>
+        </article>
+        <article class="feature-row reverse reveal">
+          <div class="feature-copy"><span>02</span><h3>{{ copy.feature_shift_title }}</h3><p>{{ copy.feature_shift_text }}</p></div>
+          <div class="feature-visual telegram-visual liquid-surface"><div class="telegram-head"><i>Т</i><div><b>{{ copy.point_b }}</b><small>{{ copy.screen_members }}</small></div><span>•••</span></div><div class="bubble left">{{ copy.screen_message_open }}</div><div class="bubble right">{{ copy.screen_shift_open }}<svg class="double-check" viewBox="0 0 20 14" aria-hidden="true"><path d="M1 7.2 5 11 12.5 2.5"/><path d="M6.5 7.2 10.5 11 18 2.5"/></svg></div><div class="command-line">{{ copy.screen_command }} <span>↗</span></div></div>
+        </article>
+        <article class="feature-row reveal">
+          <div class="feature-copy"><span>03</span><h3>{{ copy.feature_pay_title }}</h3><p>{{ copy.feature_pay_text }}</p></div>
+          <div class="feature-visual payroll-visual liquid-surface"><div class="payroll-head"><span>{{ copy.live_payroll }}</span><small>{{ copy.screen_period }}</small></div><strong>184 260 <i>₽</i></strong><div class="payroll-person"><span>{{ copy.screen_person_a }}</span><i></i><b>52 400 ₽</b></div><div class="payroll-person"><span>{{ copy.screen_person_b }}</span><i></i><b>46 800 ₽</b></div><div class="payroll-person"><span>{{ copy.screen_person_c }}</span><i></i><b>42 320 ₽</b></div></div>
+        </article>
+        <article class="feature-row reverse reveal">
+          <div class="feature-copy"><span>04</span><h3>{{ copy.feature_finance_title }}</h3><p>{{ copy.feature_finance_text }}</p></div>
+          <div class="feature-visual finance-visual liquid-surface"><div class="finance-head"><span>{{ copy.screen_profit }}</span><b>239 350 ₽</b></div><div class="bar-row"><small>{{ copy.point_a }}</small><i><b style="width:76%"></b></i><strong>102 900</strong></div><div class="bar-row"><small>{{ copy.point_b }}</small><i><b style="width:53%"></b></i><strong>82 200</strong></div><div class="bar-row"><small>{{ copy.point_c }}</small><i><b style="width:34%"></b></i><strong>54 250</strong></div></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="how" class="how-section section-pad">
+      <div class="section-intro reveal"><span class="section-number">03</span><div><div class="eyebrow">{{ copy.how_eyebrow }}</div><h2>{{ copy.how_title }}</h2></div></div>
+      <div class="steps">{% for i in range(1, 7) %}<article class="step reveal"><span>0{{ i }}</span><div><h3>{{ copy['step' ~ i ~ '_title'] }}</h3><p>{{ copy['step' ~ i ~ '_text'] }}</p></div></article>{% endfor %}</div>
+    </section>
+
+    <section id="roles" class="roles-section section-pad">
+      <div class="section-intro reveal"><span class="section-number">04</span><div><div class="eyebrow">{{ copy.roles_eyebrow }}</div><h2>{{ copy.roles_title }}</h2></div></div>
+      <div class="roles-grid">
+        <article class="role-card glass-flat reveal"><span class="role-mark">01</span><h3>{{ copy.role_owner_title }}</h3><p>{{ copy.role_owner_text }}</p></article>
+        <article class="role-card glass-flat reveal delay-1"><span class="role-mark">02</span><h3>{{ copy.role_network_title }}</h3><p>{{ copy.role_network_text }}</p></article>
+        <article class="role-card glass-flat reveal delay-1"><span class="role-mark">03</span><h3>{{ copy.role_manager_title }}</h3><p>{{ copy.role_manager_text }}</p></article>
+        <article class="role-card glass-flat reveal delay-2"><span class="role-mark">04</span><h3>{{ copy.role_employee_title }}</h3><p>{{ copy.role_employee_text }}</p></article>
+      </div>
+      <div class="pcconcept-panel glass-flat reveal">
+        <span class="pcconcept-badge">{{ copy.pcconcept_badge }}</span>
+        <div class="pcconcept-copy">
+          <div class="eyebrow">{{ copy.pcconcept_eyebrow }}</div>
+          <h3>{{ copy.pcconcept_title }}</h3>
+          <p>{{ copy.pcconcept_text }}</p>
+        </div>
+        <div class="pcconcept-mock" id="pcconcept-demo">
+          <div class="pcconcept-titlebar" aria-hidden="true"><i></i><i></i><i></i><span>{{ copy.pcconcept_window_title }}</span></div>
+          <div class="pcconcept-body">
+            <p class="pcconcept-demo-tag">{{ copy.pcconcept_demo_tag }}</p>
+            <div class="pcconcept-form">
+              <label for="pcconcept-code">{{ copy.pcconcept_code_label }}</label>
+              <input
+                type="text"
+                id="pcconcept-code"
+                class="pcconcept-input"
+                inputmode="numeric"
+                autocomplete="off"
+                maxlength="8"
+                placeholder="0000"
+                aria-describedby="pcconcept-status"
+                aria-invalid="false"
+                data-hint="{{ copy.pcconcept_code_hint }}"
+                data-invalid-text="{{ copy.pcconcept_code_invalid }}"
+                data-valid-text="{{ copy.pcconcept_code_valid }}"
+              >
+              <p id="pcconcept-status" class="pcconcept-status-text" role="status">{{ copy.pcconcept_code_hint }}</p>
+            </div>
+            <div class="pcconcept-success" id="pcconcept-success" hidden>
+              <div class="pcconcept-row"><span>{{ copy.point_a }}</span><em>09:00–21:00</em></div>
+              <div class="pcconcept-open-badge"><i></i>{{ copy.pcconcept_status_open }}</div>
+              <button type="button" class="pcconcept-button" id="pcconcept-open-app" data-clicked-text="{{ copy.pcconcept_open_app_clicked }}">{{ copy.pcconcept_open_app }}<span>↗</span></button>
+              <p class="pcconcept-open-feedback" id="pcconcept-open-feedback" role="status" hidden></p>
+            </div>
+            <p class="pcconcept-demo-note">{{ copy.pcconcept_demo_note }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="pricing-section">
+      <div class="section-pad">
+        <div class="section-intro reveal"><span class="section-number">05</span><div><div class="eyebrow">{{ copy.pricing_eyebrow }}</div><h2>{{ copy.pricing_title }}</h2><p>{{ copy.pricing_note }}</p></div></div>
+        <div class="pricing-grid">
+          <article class="price-card reveal"><div class="price-top"><span>{{ copy.plan_control }}</span><small>01</small></div><div class="price"><strong>990</strong><span>₽<br>{{ copy.per_point }}</span></div><ul>{% for item in copy.plan_control_items %}<li>{{ item }}</li>{% endfor %}</ul><a href="#connect" class="button button-outline">{{ copy.plan_cta }} <span>↗</span></a></article>
+          <article class="price-card featured liquid-surface reveal delay-1"><div class="price-top"><span>{{ copy.plan_finance }}</span><small>{{ copy.popular }}</small></div><div class="price"><strong>1 490</strong><span>₽<br>{{ copy.per_point }}</span></div><ul>{% for item in copy.plan_finance_items %}<li>{{ item }}</li>{% endfor %}</ul><a href="#connect" class="button button-primary">{{ copy.plan_cta }} <span>↗</span></a></article>
+          <article class="price-card reveal delay-2"><div class="price-top"><span>{{ copy.plan_auto }}</span><small>03</small></div><div class="price"><strong>1 990</strong><span>₽<br>{{ copy.per_point }}</span></div><ul>{% for item in copy.plan_auto_items %}<li>{{ item }}</li>{% endfor %}</ul><a href="#connect" class="button button-outline">{{ copy.plan_cta }} <span>↗</span></a></article>
+        </div>
+        <div class="tariff-calc glass-flat reveal" data-prices="990,1490,1990">
+          <div class="calc-head">
+            <div class="eyebrow">{{ copy.calc_eyebrow }}</div>
+            <h3>{{ copy.calc_title }}</h3>
+            <p>{{ copy.calc_note }}</p>
+          </div>
+          <div class="calc-body">
+            <div class="calc-plans" role="group" aria-label="{{ copy.calc_plan_label }}">
+              <button type="button" class="calc-plan is-active" data-price="990">{{ copy.plan_control }}</button>
+              <button type="button" class="calc-plan" data-price="1490">{{ copy.plan_finance }}</button>
+              <button type="button" class="calc-plan" data-price="1990">{{ copy.plan_auto }}</button>
+            </div>
+            <label class="calc-slider-row">
+              <span>{{ copy.calc_points_label }}</span>
+              <input type="range" min="1" max="20" step="1" value="1" class="calc-slider" aria-describedby="calc-points-value">
+              <output id="calc-points-value" class="calc-points-value">1</output>
+            </label>
+            <div class="calc-tiers">
+              <span>{{ copy.calc_tier_none }}</span><span>{{ copy.calc_tier_a }}</span><span>{{ copy.calc_tier_b }}</span><span>{{ copy.calc_tier_c }}</span>
+            </div>
+            <div class="calc-result">
+              <div><small>{{ copy.calc_discount_label }}</small><strong class="calc-discount">0%</strong></div>
+              <div><small>{{ copy.calc_total_label }}</small><strong class="calc-total">990 ₽</strong></div>
+            </div>
+            <p class="calc-disclaimer">{{ copy.calc_disclaimer }}</p>
+          </div>
+        </div>
+        <div class="setup-row reveal"><div><span>{{ copy.setup_title }}</span><p>{{ copy.setup_text }}</p></div><a href="#connect">{{ copy.setup_cta }} ↗</a></div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq-section section-pad">
+      <div class="section-intro reveal"><span class="section-number">06</span><div><div class="eyebrow">{{ copy.faq_eyebrow }}</div><h2>{{ copy.faq_title }}</h2></div></div>
+      <div class="faq-list">{% for i in range(1, 5) %}<details class="faq-item reveal"><summary><span>0{{ i }}</span>{{ copy['faq' ~ i ~ '_q'] }}<b>+</b></summary><div class="faq-panel"><p>{{ copy['faq' ~ i ~ '_a'] }}</p></div></details>{% endfor %}</div>
+    </section>
+
+    <section id="connect" class="connect-section section-pad">
+      <div class="connect-shell liquid-surface">
+        <div class="connect-copy reveal"><div class="eyebrow">{{ copy.connect_eyebrow }}</div><h2>{{ copy.connect_title }}</h2><p>{{ copy.connect_text }}</p><img src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="58" height="58"></div>
+        <form class="connect-form reveal delay-1" method="post" action="{{ url_for('request_access') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="lang" value="{{ current_lang }}">
+          <label>{{ copy.field_name }}<input name="name" maxlength="120" required autocomplete="name"></label>
+          <label>{{ copy.field_contact }}<input name="contact" maxlength="160" required autocomplete="tel"></label>
+          <label>{{ copy.field_points }}<select name="points" required><option value="">—</option><option value="1">1</option><option value="2-4">2–4</option><option value="5-9">5–9</option><option value="10+">10+</option></select></label>
+          <label>{{ copy.field_message }}<textarea name="message" maxlength="1000" rows="3"></textarea></label>
+          <label class="consent"><input type="checkbox" name="consent" value="1" required><span>{{ copy.field_consent }} <a href="{{ url_for('privacy_policy', lang=current_lang) }}" target="_blank" rel="noopener">{{ copy.field_consent_link }}</a>.</span></label>
+          <button class="button button-primary" type="submit">{{ copy.connect_submit }} <span>↗</span></button>
+          {% if lead_message %}<p class="form-message {{ 'success' if lead_ok else 'error' }}">{{ lead_message }}</p>{% endif %}
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><a href="/" class="footer-brand"><img src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="28" height="28"><span>{{ copy.brand }}</span></a><span>{{ copy.footer_text }}</span><div><a href="{{ url_for('terms_of_use', lang=current_lang) }}">{{ copy.footer_terms }}</a><a href="{{ url_for('privacy_policy', lang=current_lang) }}">{{ copy.footer_privacy }}</a><a href="{{ url_for('cookies_notice', lang=current_lang) }}">{{ copy.legal_cookie_link }}</a><a href="#connect">{{ copy.footer_contact }}</a></div><small>© 2026</small></footer>
+  {% include '_cookie_banner.html' %}
+  <script src="{{ url_for('static', filename='js/landing.js') }}?v=8"></script>
+</body>
+</html>

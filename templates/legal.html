@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="{{ current_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ content.title }}">
+  <meta name="theme-color" content="#050505">
+  <title>{{ copy.brand }} — {{ content.title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=12">
+  <script>(function(){try{if(sessionStorage.getItem('takt-lang-switch')){document.documentElement.classList.add('lang-pending');}}catch(e){}})();</script>
+</head>
+<body>
+  <div class="page-light" aria-hidden="true"></div>
+
+  <header class="site-nav liquid-surface">
+    <a href="{{ url_for('index') }}" class="brand" aria-label="{{ copy.brand }}">
+      <img src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="38" height="38">
+      <span>{{ copy.brand }}</span>
+    </a>
+    <div class="nav-actions">
+      <div class="language-switch" aria-label="{{ copy.nav_language }}">
+        <a class="{% if current_lang == 'ru' %}active{% endif %}" href="{{ url_for('set_language', code='ru') }}">RU</a><span>/</span><a class="{% if current_lang == 'en' %}active{% endif %}" href="{{ url_for('set_language', code='en') }}">EN</a>
+      </div>
+      <a class="legal-nav-back" href="{{ url_for('index') }}">↖ {{ copy.legal_back }}</a>
+    </div>
+  </header>
+
+  <main>
+    <article class="legal-section section-pad">
+      <div class="legal-draft" role="note" aria-label="{{ copy.legal_draft_title }}">
+        <strong>{{ copy.legal_draft_title }}</strong>
+        <p>{{ copy.legal_draft_text }}</p>
+      </div>
+
+      <h1>{{ content.title }}</h1>
+      <p class="legal-updated">{{ copy.legal_updated_label }}: {{ content.updated }}</p>
+      <p class="legal-intro">{{ content.intro }}</p>
+
+      {% for section in content.sections %}
+      <section class="legal-block">
+        <h2>{{ section.title }}</h2>
+        {% for para in section.body %}<p>{{ para }}</p>{% endfor %}
+      </section>
+      {% endfor %}
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <a href="/" class="footer-brand"><img src="{{ url_for('static', filename='img/takt-mark.svg') }}" alt="" width="28" height="28"><span>{{ copy.brand }}</span></a>
+    <span>{{ copy.footer_text }}</span>
+    <div><a href="{{ url_for('terms_of_use', lang=current_lang) }}">{{ copy.footer_terms }}</a><a href="{{ url_for('privacy_policy', lang=current_lang) }}">{{ copy.footer_privacy }}</a><a href="{{ url_for('cookies_notice', lang=current_lang) }}">{{ copy.legal_cookie_link }}</a></div>
+    <small>© 2026</small>
+  </footer>
+  {% include '_cookie_banner.html' %}
+  <script src="{{ url_for('static', filename='js/landing.js') }}?v=8"></script>
+</body>
+</html>

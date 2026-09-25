@@ -1,0 +1,180 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Панель владельца — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>👑 Панель владельца</h1>
+    <p style="color: var(--text-secondary);">Управление всеми пользователями и привилегиями</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Веб-пользователи</span>
+        <span class="badge badge-success">{{ web_users|length }} пользователей</span>
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Логин</th>
+                    <th>Роль</th>
+                    <th>Telegram</th>
+                    <th>Связан</th>
+                    <th>Управляемые чаты</th>
+                    <th>Дата регистрации</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in web_users %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td>
+                        <div class="user-cell">
+                            <i data-lucide="user"></i>
+                            <span>{{ u.username }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if u.role == 'super_admin' %}
+                        <span class="status-badge" style="background: rgba(168, 85, 247, 0.1); color: #c084fc;">Супер Админ</span>
+                        {% elif u.role == 'admin' %}
+                        <span class="status-badge success">Админ</span>
+                        {% elif u.role == 'view_admin' %}
+                        <span class="status-badge" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa;">View Admin</span>
+                        {% elif u.role == 'user' %}
+                        <span class="status-badge">Пользователь</span>
+                        {% else %}
+                        <span class="status-badge" style="opacity: 0.5;">Гость</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.telegram_id or '—' }}</td>
+                    <td>
+                        {% if u.telegram_linked %}
+                        <i data-lucide="check-circle" style="color: var(--success); width: 18px; height: 18px;"></i>
+                        {% else %}
+                        <i data-lucide="x-circle" style="color: var(--text-secondary); width: 18px; height: 18px;"></i>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.managed_chat_ids or '—' }}</td>
+                    <td>{{ u.created_at }}</td>
+                    <td>
+                        {% if u.id != user.id %}
+                        <button onclick="showRoleModal({{ u.id }}, '{{ u.username }}', '{{ u.role }}', '{{ u.managed_chat_ids or '' }}')" 
+                                class="btn-icon primary" title="Изменить роль">
+                            <i data-lucide="edit"></i>
+                        </button>
+                        {% else %}
+                        <span class="text-muted">Это вы</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <span class="card-title">Telegram пользователи (Workers)</span>
+        <span class="badge">{{ telegram_users|length }} работников</span>
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Telegram ID</th>
+                    <th>Username</th>
+                    <th>Имя</th>
+                    <th>Смен</th>
+                    <th>Чаты</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tg in telegram_users %}
+                <tr>
+                    <td>{{ tg.telegram_id }}</td>
+                    <td>@{{ tg.username or 'N/A' }}</td>
+                    <td>{{ tg.full_name or '—' }}</td>
+                    <td>{{ tg.shift_count }}</td>
+                    <td>{{ tg.chat_ids or '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Модальное окно для изменения роли -->
+<div id="roleModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 500px; width: 90%; margin: 2rem;">
+        <div class="card-header">
+            <span class="card-title">Изменить роль пользователя</span>
+            <button onclick="closeRoleModal()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div class="card-content">
+            <form id="roleForm" method="POST" action="">
+                <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+                <div class="form-group">
+                    <label>Пользователь</label>
+                    <input type="text" id="modal_username" class="form-input" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Роль</label>
+                    <select id="role" name="role" class="form-input" required>
+                        <option value="guest">Гость (только VPN)</option>
+                        <option value="user">Пользователь (с Telegram)</option>
+                        <option value="view_admin">View Admin (просмотр)</option>
+                        <option value="admin">Админ (управление)</option>
+                        <option value="super_admin">Супер Админ (владелец)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="managed_chats">Управляемые чаты (ID через запятую)</label>
+                    <input type="text" id="managed_chats" name="managed_chats" class="form-input" 
+                           placeholder="123,456,789 или оставьте пустым">
+                    <small style="color: var(--text-secondary);">Для админов - чаты, которыми они управляют</small>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        Сохранить
+                    </button>
+                    <button type="button" onclick="closeRoleModal()" class="btn" style="flex: 1; background: var(--bg-tertiary);">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function showRoleModal(userId, username, currentRole, managedChats) {
+    document.getElementById('modal_username').value = username;
+    document.getElementById('role').value = currentRole;
+    document.getElementById('managed_chats').value = managedChats;
+    document.getElementById('roleForm').action = `/owner/update_role/${userId}`;
+    document.getElementById('roleModal').style.display = 'flex';
+    lucide.createIcons();
+}
+
+function closeRoleModal() {
+    document.getElementById('roleModal').style.display = 'none';
+}
+
+// Закрытие по клику вне модального окна
+document.getElementById('roleModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeRoleModal();
+    }
+});
+</script>
+{% endblock %}

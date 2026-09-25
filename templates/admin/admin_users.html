@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление пользователями — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>Управление пользователями сайта</h1>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Логин</th>
+                    <th>Имя сотрудника</th>
+                    <th>Статус</th>
+                    <th>Дата регистрации</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.user_id }}</td>
+                    <td>
+                        <div class="user-cell">
+                            <i data-lucide="user"></i>
+                            <span>{{ u.username }}</span>
+                        </div>
+                    </td>
+                    <td>{{ u.full_name or '—' }}</td>
+                    <td>
+                        {% if u.is_admin %}
+                        <span class="status-badge success">Администратор</span>
+                        {% else %}
+                        <span class="status-badge">Пользователь</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.created_at }}</td>
+                    <td>
+                        <div class="actions">
+                            {% if is_super_admin and u.user_id != user.user_id %}
+                                <a href="{{ url_for('toggle_admin', user_id=u.user_id) }}" 
+                                   class="btn-icon {% if u.is_admin %}danger{% else %}primary{% endif %}" 
+                                   title="{% if u.is_admin %}Снять права админа{% else %}Дать права админа{% endif %}">
+                                    <i data-lucide="shield-{% if u.is_admin %}off{% else %}check{% endif %}"></i>
+                                </a>
+                            {% elif u.user_id == user.user_id %}
+                                <span class="text-muted">Это вы</span>
+                            {% else %}
+                                <span class="text-muted" title="Нужны права супер-админа"><i data-lucide="lock"></i></span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+# Example production topology: public and admin are separate containers
+# built from separate images (Dockerfile / Dockerfile.admin) — not one
+# Flask process gating routes by config. Copy to docker-compose.yml, fill
+# in .env, and adjust deploy/nginx.example.conf's server_name/certs before
+# using this for real. See docs/security-baseline.md for the threat model
+# and its documented remaining limitation (shared DB volume + secret key).
+#
+# Ingress: only `proxy` is published to the host (80/443). `public` and
+# `admin` are reachable only on the internal `default` compose network.
+# `admin` sets ADMIN_BIND_HOST=0.0.0.0 so `proxy` can reach it by service
+# name — that still does not expose it outside this compose network, since
+# nothing here publishes admin's port to the host. Only `proxy`, configured
+# to route ADMIN_HOST to `admin` and reject admin paths on the public
+# upstream (deploy/nginx.example.conf), is reachable from the internet.
+
+services:
+  # NOTE: APP_ENV=production requires PLATFORM_DATABASE_URL (a PostgreSQL
+  # DSN) to be set in .env — config.py fails fast otherwise so SQLite can
+  # never silently stand in for it in production. PLATFORM_DATABASE_PATH
+  # below only matters if you deliberately run this compose file with
+  # APP_ENV=development for a local multi-container smoke test.
+  public:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      APP_ENV: production
+      DATABASE_PATH: /app/data/salary_bot.db
+      PLATFORM_DATABASE_PATH: /app/data/platform.db
+    volumes:
+      - takt-data:/app/data
+    expose:
+      - "5000"
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+    env_file: .env
+    environment:
+      APP_ENV: production
+      ADMIN_BIND_HOST: 0.0.0.0
+      DATABASE_PATH: /app/data/salary_bot.db
+      PLATFORM_DATABASE_PATH: /app/data/platform.db
+    volumes:
+      - takt-data:/app/data
+    expose:
+      - "5001"
+    restart: unless-stopped
+
+  proxy:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./deploy/nginx.example.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/certs:/etc/nginx/certs:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - public
+      - admin
+    restart: unless-stopped
+
+volumes:
+  # Shared legacy SQLite (salary_bot.db) + transitional platform DB file.
+  # Deliberate, documented boundary for now: both containers open the same
+  # file/DSN as two separate Database/PlatformStore objects (real separate
+  # processes, not a shared Python object). See docs/security-baseline.md —
+  # "Разрыв: общая БД и общий секрет" — for why this is a stronger boundary
+  # than the old single-process ADMIN_HOST gate but not yet a full DB/API
+  # split, and what that split would look like.
+  takt-data:

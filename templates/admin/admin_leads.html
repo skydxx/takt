@@ -1,0 +1,53 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Заявки — Такт{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1>Заявки на подключение</h1>
+</div>
+<div class="card">
+    <div class="card-header"><span class="card-title">Выдать код после оплаты</span></div>
+    <form method="post" action="{{ url_for('issue_admin_owner_code') }}" class="inline-form">
+        <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+        <label>Срок, дней <input name="expires_days" type="number" min="1" max="3650" value="30"></label>
+        <label>Тариф <input name="plan" maxlength="40" placeholder="control"></label>
+        <label>Лимит ПВЗ <input name="point_limit" type="number" min="1" max="1000" placeholder="1"></label>
+        <button class="action-btn" type="submit">Создать код</button>
+    </form>
+</div>
+<div class="card">
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr><th>Дата</th><th>Имя</th><th>Контакт</th><th>ПВЗ</th><th>Сообщение</th><th>Статус</th><th></th></tr>
+            </thead>
+            <tbody>
+            {% for lead in leads %}
+                <tr>
+                    <td>{{ lead.created_at }}</td>
+                    <td>{{ lead.name }}</td>
+                    <td>{{ lead.contact }}</td>
+                    <td>{{ lead.points }}</td>
+                    <td>{{ lead.message or '—' }}</td>
+                    <td><span class="status-badge {% if lead.status == 'converted' %}success{% elif lead.status == 'closed' %}secondary{% endif %}">{{ {'new': 'Новая', 'contacted': 'Связались', 'converted': 'Подключён', 'closed': 'Закрыта'}.get(lead.status, lead.status) }}</span></td>
+                    <td>
+                        <form method="post" action="{{ url_for('update_admin_lead', lead_id=lead.id) }}" class="inline-form">
+                            <input type="hidden" name="auth_csrf_token" value="{{ auth_csrf_token }}">
+                            <select name="status" aria-label="Статус заявки">
+                                {% for value, label in [('new', 'Новая'), ('contacted', 'Связались'), ('converted', 'Подключён'), ('closed', 'Закрыта')] %}
+                                <option value="{{ value }}" {% if lead.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="action-btn" type="submit">Сохранить</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="text-muted">Заявок пока нет.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

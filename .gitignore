@@ -1,0 +1,40 @@
+# Secrets and runtime state
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite
+*.sqlite3
+data/
+*.key
+*.pem
+*.p12
+*.log
+salary_data.json
+.scratch/
+*.blend
+*.blend1
+CLAUDE.md
+CODEX.md
+GEMINI.md
+
+# Python/runtime
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Build/deploy archives may contain secrets
+*.zip
+*.tar
+*.tar.gz
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
